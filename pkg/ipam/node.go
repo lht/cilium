@@ -357,7 +357,7 @@ func (n *Node) UpdatedResource(resource *v2.CiliumNode) bool {
 	// dependent on caller not using the resource after this call.
 	resource = resource.DeepCopy()
 
-	n.ops.UpdatedNode(resource)
+	n.ops.UpdatedNode(context.TODO(), resource)
 
 	n.mutex.Lock()
 	// Any modification to the custom resource is seen as a sign that the

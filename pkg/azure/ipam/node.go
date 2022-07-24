@@ -30,7 +30,7 @@ type Node struct {
 }
 
 // UpdatedNode is called when an update to the CiliumNode is received.
-func (n *Node) UpdatedNode(obj *v2.CiliumNode) {
+func (n *Node) UpdatedNode(ctx context.Context, obj *v2.CiliumNode) {
 	n.k8sObj = obj
 }
 

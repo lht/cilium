@@ -44,6 +44,9 @@ func init() {
 	flags.Bool(operatorOption.AWSUsePrimaryAddress, false, "Allows for using primary address of the ENI for allocations on the node")
 	option.BindEnv(operatorOption.AWSUsePrimaryAddress)
 
+	flags.Bool(operatorOption.AWSDisableSourceDestCheck, false, "Disable source/destination check on the direct routing device")
+	option.BindEnv(operatorOption.AWSDisableSourceDestCheck)
+
 	flags.String(operatorOption.EC2APIEndpoint, "", "AWS API endpoint for the EC2 service")
 	option.BindEnv(operatorOption.EC2APIEndpoint)
 

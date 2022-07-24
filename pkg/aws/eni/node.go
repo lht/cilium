@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"os"
 	"sort"
 	"strings"
 	"sync"
@@ -28,6 +29,7 @@ import (
 	v2 "github.com/cilium/cilium/pkg/k8s/apis/cilium.io/v2"
 	"github.com/cilium/cilium/pkg/lock"
 	"github.com/cilium/cilium/pkg/math"
+	doption "github.com/cilium/cilium/pkg/option"
 )
 
 const (
@@ -72,10 +74,37 @@ func NewNode(node *ipam.Node, k8sObj *v2.CiliumNode, manager *InstancesManager) 
 }
 
 // UpdatedNode is called when an update to the CiliumNode is received.
-func (n *Node) UpdatedNode(obj *v2.CiliumNode) {
+func (n *Node) UpdatedNode(ctx context.Context, obj *v2.CiliumNode) {
+	if operatorOption.Config.AWSDisableSourceDestCheck {
+		n.disableSrcDestCheck(ctx)
+	}
 	n.mutex.Lock()
 	defer n.mutex.Unlock()
 	n.k8sObj = obj
+}
+
+func (n *Node) disableSrcDestCheck(ctx context.Context) error {
+	if !doption.Config.DirectRoutingDeviceRequired() {
+		return nil
+	}
+
+	mac, err := os.ReadFile(fmt.Sprintf("/sys/class/net/%s/address", doption.Config.DirectRoutingDevice))
+	if err != nil {
+		return err
+	}
+
+	n.manager.ForeachInstance(n.node.InstanceID(),
+		func(instanceID, interfaceID string, rev ipamTypes.InterfaceRevision) error {
+			e, ok := rev.Resource.(*eniTypes.ENI)
+			if !ok {
+				return nil
+			}
+			if e.MAC != string(mac) {
+				return nil
+			}
+			return n.manager.api.ModifyNetworkInterface(ctx, interfaceID, "", false, false)
+		})
+	return nil
 }
 
 func (n *Node) loggerLocked() *logrus.Entry {
@@ -484,7 +513,7 @@ func (n *Node) CreateInterface(ctx context.Context, allocation *ipam.AllocationA
 	if resource.Spec.ENI.DeleteOnTermination == nil || *resource.Spec.ENI.DeleteOnTermination {
 		// We have an attachment ID from the last API, which lets us mark the
 		// interface as delete on termination
-		err = n.manager.api.ModifyNetworkInterface(ctx, eniID, attachmentID, true)
+		err = n.manager.api.ModifyNetworkInterface(ctx, eniID, attachmentID, true, true)
 		if err != nil {
 			delErr := n.manager.api.DeleteNetworkInterface(ctx, eniID)
 			if delErr != nil {

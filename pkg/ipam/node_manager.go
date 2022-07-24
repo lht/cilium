@@ -39,7 +39,7 @@ type CiliumNodeGetterUpdater interface {
 // that node.
 type NodeOperations interface {
 	// UpdateNode is called when an update to the CiliumNode is received.
-	UpdatedNode(obj *v2.CiliumNode)
+	UpdatedNode(ctx context.Context, obj *v2.CiliumNode)
 
 	// PopulateStatusFields is called to give the implementation a chance
 	// to populate any implementation specific fields in CiliumNode.Status.
@@ -134,33 +134,35 @@ type nodeMap map[string]*Node
 
 // NodeManager manages all nodes with ENIs
 type NodeManager struct {
-	mutex              lock.RWMutex
-	nodes              nodeMap
-	instancesAPI       AllocationImplementation
-	k8sAPI             CiliumNodeGetterUpdater
-	metricsAPI         MetricsAPI
-	resyncTrigger      *trigger.Trigger
-	parallelWorkers    int64
-	releaseExcessIPs   bool
-	stableInstancesAPI bool
-	prefixDelegation   bool
+	mutex               lock.RWMutex
+	nodes               nodeMap
+	instancesAPI        AllocationImplementation
+	k8sAPI              CiliumNodeGetterUpdater
+	metricsAPI          MetricsAPI
+	resyncTrigger       *trigger.Trigger
+	parallelWorkers     int64
+	releaseExcessIPs    bool
+	stableInstancesAPI  bool
+	prefixDelegation    bool
+	disableSrcDestCheck bool
 }
 
 // NewNodeManager returns a new NodeManager
 func NewNodeManager(instancesAPI AllocationImplementation, k8sAPI CiliumNodeGetterUpdater, metrics MetricsAPI,
-	parallelWorkers int64, releaseExcessIPs bool, prefixDelegation bool) (*NodeManager, error) {
+	parallelWorkers int64, releaseExcessIPs bool, prefixDelegation bool, disableSrcDestCheck bool) (*NodeManager, error) {
 	if parallelWorkers < 1 {
 		parallelWorkers = 1
 	}
 
 	mngr := &NodeManager{
-		nodes:            nodeMap{},
-		instancesAPI:     instancesAPI,
-		k8sAPI:           k8sAPI,
-		metricsAPI:       metrics,
-		parallelWorkers:  parallelWorkers,
-		releaseExcessIPs: releaseExcessIPs,
-		prefixDelegation: prefixDelegation,
+		nodes:               nodeMap{},
+		instancesAPI:        instancesAPI,
+		k8sAPI:              k8sAPI,
+		metricsAPI:          metrics,
+		parallelWorkers:     parallelWorkers,
+		releaseExcessIPs:    releaseExcessIPs,
+		prefixDelegation:    prefixDelegation,
+		disableSrcDestCheck: disableSrcDestCheck,
 	}
 
 	resyncTrigger, err := trigger.NewTrigger(trigger.Parameters{

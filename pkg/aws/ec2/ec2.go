@@ -228,9 +228,10 @@ func parseENI(iface *ec2_types.NetworkInterface, vpcs ipamTypes.VirtualNetworkMa
 	}
 
 	eni = &eniTypes.ENI{
-		IP:             aws.ToString(iface.PrivateIpAddress),
-		SecurityGroups: []string{},
-		Addresses:      []string{},
+		IP:              aws.ToString(iface.PrivateIpAddress),
+		SecurityGroups:  []string{},
+		Addresses:       []string{},
+		SourceDestCheck: aws.ToBool(iface.SourceDestCheck),
 	}
 
 	if iface.MacAddress != nil {
@@ -523,15 +524,23 @@ func (c *Client) AttachNetworkInterface(ctx context.Context, index int32, instan
 }
 
 // ModifyNetworkInterface modifies the attributes of an ENI
-func (c *Client) ModifyNetworkInterface(ctx context.Context, eniID, attachmentID string, deleteOnTermination bool) error {
-	changes := &ec2_types.NetworkInterfaceAttachmentChanges{
-		AttachmentId:        aws.String(attachmentID),
-		DeleteOnTermination: aws.Bool(deleteOnTermination),
+func (c *Client) ModifyNetworkInterface(ctx context.Context, eniID, attachmentID string, deleteOnTermination, sourceDestCheck bool) error {
+	input := &ec2.ModifyNetworkInterfaceAttributeInput{
+		NetworkInterfaceId: aws.String(eniID),
 	}
 
-	input := &ec2.ModifyNetworkInterfaceAttributeInput{
-		Attachment:         changes,
-		NetworkInterfaceId: aws.String(eniID),
+	if attachmentID != "" {
+		changes := &ec2_types.NetworkInterfaceAttachmentChanges{
+			AttachmentId:        aws.String(attachmentID),
+			DeleteOnTermination: aws.Bool(deleteOnTermination),
+		}
+		input.Attachment = changes
+	}
+
+	if !sourceDestCheck {
+		input.SourceDestCheck = &ec2_types.AttributeBooleanValue{
+			Value: &sourceDestCheck,
+		}
 	}
 
 	c.limiter.Limit(ctx, "ModifyNetworkInterfaceAttribute")

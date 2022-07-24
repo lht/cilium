@@ -423,7 +423,7 @@ func foreachInterface(instanceID string, instance *Instance, fn InterfaceIterato
 }
 
 // ForeachInterface calls fn for each interface on each interface attached to
-// each instance. If an instanceID is specified, the only the interfaces and
+// each instance. If an instanceID is specified, then only the interfaces and
 // addresses of the specified instance are considered.
 //
 // The InstanceMap is read-locked throughout the iteration process, i.e., no

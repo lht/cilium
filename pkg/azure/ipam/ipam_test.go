@@ -187,7 +187,7 @@ func (e *IPAMSuite) TestIpamPreAllocate8(c *check.C) {
 	instances.Resync(context.TODO())
 
 	k8sapi := newK8sMock()
-	mngr, err := ipam.NewNodeManager(instances, k8sapi, metricsmock.NewMockMetrics(), 10, false, false)
+	mngr, err := ipam.NewNodeManager(instances, k8sapi, metricsmock.NewMockMetrics(), 10, false, false, false)
 	c.Assert(err, check.IsNil)
 	c.Assert(mngr, check.Not(check.IsNil))
 
@@ -249,7 +249,7 @@ func (e *IPAMSuite) TestIpamMinAllocate10(c *check.C) {
 	instances.Resync(context.TODO())
 
 	k8sapi := newK8sMock()
-	mngr, err := ipam.NewNodeManager(instances, k8sapi, metricsmock.NewMockMetrics(), 10, false, false)
+	mngr, err := ipam.NewNodeManager(instances, k8sapi, metricsmock.NewMockMetrics(), 10, false, false, false)
 	c.Assert(err, check.IsNil)
 	c.Assert(mngr, check.Not(check.IsNil))
 
@@ -301,7 +301,7 @@ func (e *IPAMSuite) TestIpamManyNodes(c *check.C) {
 
 	k8sapi := newK8sMock()
 	metrics := metricsmock.NewMockMetrics()
-	mngr, err := ipam.NewNodeManager(instances, k8sapi, metrics, 10, false, false)
+	mngr, err := ipam.NewNodeManager(instances, k8sapi, metrics, 10, false, false, false)
 	c.Assert(err, check.IsNil)
 	c.Assert(mngr, check.Not(check.IsNil))
 
@@ -375,7 +375,7 @@ func benchmarkAllocWorker(c *check.C, workers int64, delay time.Duration, rateLi
 
 	k8sapi := newK8sMock()
 	metrics := metricsmock.NewMockMetrics()
-	mngr, err := ipam.NewNodeManager(instances, k8sapi, metrics, workers, false, false)
+	mngr, err := ipam.NewNodeManager(instances, k8sapi, metrics, workers, false, false, false)
 	c.Assert(err, check.IsNil)
 	c.Assert(mngr, check.Not(check.IsNil))
 

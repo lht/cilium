@@ -110,7 +110,7 @@ func (e *MockSuite) TestSetMockError(c *check.C) {
 	c.Assert(err, check.Equals, mockError)
 
 	api.SetMockError(ModifyNetworkInterface, mockError)
-	err = api.ModifyNetworkInterface(context.TODO(), "e-1", "a-1", true)
+	err = api.ModifyNetworkInterface(context.TODO(), "e-1", "a-1", true, true)
 	c.Assert(err, check.Equals, mockError)
 }
 

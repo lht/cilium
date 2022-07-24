@@ -200,6 +200,11 @@ type ENI struct {
 	//
 	// +optional
 	Tags map[string]string `json:"tags,omitempty"`
+
+	// SourceDestCheck indicates whether source/destination checking is enabled.
+	//
+	// +optional
+	SourceDestCheck bool `json:"sourceDestCheck,omitempty"`
 }
 
 // InterfaceID returns the identifier of the interface

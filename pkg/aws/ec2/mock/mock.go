@@ -288,7 +288,7 @@ func (e *API) AttachNetworkInterface(ctx context.Context, index int32, instanceI
 	return "", nil
 }
 
-func (e *API) ModifyNetworkInterface(ctx context.Context, eniID, attachmentID string, deleteOnTermination bool) error {
+func (e *API) ModifyNetworkInterface(ctx context.Context, eniID, attachmentID string, deleteOnTermination, sourceDestCheck bool) error {
 	e.rateLimit()
 	e.delaySim.Delay(ModifyNetworkInterface)
 

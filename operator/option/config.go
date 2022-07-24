@@ -174,6 +174,10 @@ const (
 	// node
 	AWSUsePrimaryAddress = "aws-use-primary-address"
 
+	// AWSDisableSourceDestCheck specifies whether the attribute
+	// sourceDestCheck should be disabled on the primary network interface
+	AWSDisableSourceDestCheck = "aws-disable-source-dest-check"
+
 	// Azure options
 
 	// AzureSubscriptionID is the subscription ID to use when accessing the Azure API
@@ -392,6 +396,10 @@ type OperatorConfig struct {
 	// node
 	AWSUsePrimaryAddress bool
 
+	// AWSDisableSourceDestCheck specifies whether the attribute
+	// sourceDestCheck should be disabled on the primary network interface
+	AWSDisableSourceDestCheck bool
+
 	// UpdateEC2AdapterLimitViaAPI configures the operator to use the EC2 API to fill out the
 	// instancetype to adapter limit mapping.
 	UpdateEC2AdapterLimitViaAPI bool
@@ -524,6 +532,12 @@ func (c *OperatorConfig) Populate() {
 	c.AWSReleaseExcessIPs = viper.GetBool(AWSReleaseExcessIPs)
 	c.AWSEnablePrefixDelegation = viper.GetBool(AWSEnablePrefixDelegation)
 	c.AWSUsePrimaryAddress = viper.GetBool(AWSUsePrimaryAddress)
+	c.AWSDisableSourceDestCheck = viper.GetBool(AWSDisableSourceDestCheck)
+	if !viper.IsSet(AWSDisableSourceDestCheck) {
+		if option.Config.NodePortMode != option.NodePortModeSNAT {
+			c.AWSDisableSourceDestCheck = true
+		}
+	}
 	c.UpdateEC2AdapterLimitViaAPI = viper.GetBool(UpdateEC2AdapterLimitViaAPI)
 	c.EC2APIEndpoint = viper.GetString(EC2APIEndpoint)
 	c.ExcessIPReleaseDelay = viper.GetInt(ExcessIPReleaseDelay)
